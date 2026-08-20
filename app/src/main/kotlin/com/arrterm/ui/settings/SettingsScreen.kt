@@ -8,13 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,13 +28,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.arrterm.data.settings.ServerConfig
 import com.arrterm.data.settings.ServiceType
-import com.arrterm.ui.common.SectionHeader
+import com.arrterm.ui.common.GlassButton
+import com.arrterm.ui.common.GlassCard
+import com.arrterm.ui.theme.BubbleError
+import com.arrterm.ui.theme.BubbleSuccess
+import com.arrterm.ui.theme.SkyBlueDeep
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,13 +49,20 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
 
     Scaffold(
         modifier = modifier,
-        topBar = { TopAppBar(title = { Text("SETTINGS", fontFamily = FontFamily.Monospace) }) },
+        containerColor = Color.Transparent,
+        topBar = {
+            TopAppBar(
+                title = { Text("Settings") },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+            )
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(ServiceType.entries) { service ->
                 ServiceConfigSection(
@@ -83,14 +91,15 @@ private fun ServiceConfigSection(
     var apiKey by remember(service, config) { mutableStateOf(config.apiKey) }
     var keyVisible by remember { mutableStateOf(false) }
 
-    Column {
-        SectionHeader(service.displayName)
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            Text(service.displayName, style = MaterialTheme.typography.titleMedium, color = SkyBlueDeep)
+
             OutlinedTextField(
                 value = url,
                 onValueChange = { url = it },
@@ -117,27 +126,20 @@ private fun ServiceConfigSection(
                 textStyle = MaterialTheme.typography.bodyMedium,
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { onSave(ServerConfig(url, apiKey)) }) {
-                    Text("SAVE")
-                }
-                Button(
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                GlassButton(text = "Save", onClick = { onSave(ServerConfig(url, apiKey)) })
+                GlassButton(
+                    text = "Test Connection",
                     onClick = { onTest(ServerConfig(url, apiKey)) },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                ) {
-                    Text("TEST CONNECTION")
-                }
+                    tint = SkyBlueDeep,
+                )
                 if (testState == TestState.TESTING) {
                     CircularProgressIndicator(modifier = Modifier.padding(start = 4.dp))
                 }
             }
 
             if (testMessage != null) {
-                val color = if (testState == TestState.SUCCESS) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.error
-                }
+                val color = if (testState == TestState.SUCCESS) BubbleSuccess else BubbleError
                 Text(text = testMessage, color = color, style = MaterialTheme.typography.bodySmall)
             }
         }

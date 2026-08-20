@@ -44,3 +44,9 @@ data class SonarrSystemStatus(
     val appName: String = "",
     val version: String = "",
 )
+
+@Serializable
+data class SonarrSearchCommand(
+    val name: String = "SeriesSearch",
+    val seriesId: Int,
+)

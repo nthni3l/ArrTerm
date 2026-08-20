@@ -38,3 +38,9 @@ data class RadarrSystemStatus(
     val appName: String = "",
     val version: String = "",
 )
+
+@Serializable
+data class RadarrSearchCommand(
+    val name: String = "MoviesSearch",
+    val movieIds: List<Int>,
+)

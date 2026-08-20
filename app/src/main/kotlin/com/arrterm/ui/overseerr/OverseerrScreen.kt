@@ -9,28 +9,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.arrterm.data.remote.overseerr.OverseerrRequest
 import com.arrterm.ui.common.FullScreenError
 import com.arrterm.ui.common.FullScreenLoading
+import com.arrterm.ui.common.GlassButton
+import com.arrterm.ui.common.GlassCard
 import com.arrterm.ui.common.NotConfiguredPlaceholder
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.UiState
+import com.arrterm.ui.theme.BubbleError
+import com.arrterm.ui.theme.BubbleSuccess
+import com.arrterm.ui.theme.SkyBlueDeep
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +47,13 @@ fun OverseerrScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = { TopAppBar(title = { Text("OVERSEERR", fontFamily = FontFamily.Monospace) }) },
+        containerColor = Color.Transparent,
+        topBar = {
+            TopAppBar(
+                title = { Text("Overseerr") },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+            )
+        },
     ) { padding ->
         when (val s = state) {
             is UiState.NotConfigured -> NotConfiguredPlaceholder(
@@ -85,7 +94,7 @@ private fun OverseerrContent(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "// no pending requests",
+                text = "No pending requests",
                 modifier = Modifier.padding(24.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
@@ -93,7 +102,11 @@ private fun OverseerrContent(
         }
         return
     }
-    LazyColumn(modifier = modifier) {
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         items(requests, key = { it.id }) { request ->
             RequestRow(
                 request = request,
@@ -112,42 +125,40 @@ private fun RequestRow(
     onApprove: () -> Unit,
     onDecline: () -> Unit,
 ) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 12.dp, vertical = 8.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    "${request.media.mediaType.uppercase()} #${request.media.tmdbId ?: request.media.id}",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(
-                    "requested by ${request.requestedBy.displayName.ifBlank { "unknown" }}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "${request.media.mediaType.uppercase()} #${request.media.tmdbId ?: request.media.id}",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        "requested by ${request.requestedBy.displayName.ifBlank { "unknown" }}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                StatusBadge(request.statusLabel, SkyBlueDeep)
             }
-            StatusBadge(request.statusLabel, MaterialTheme.colorScheme.secondary)
-        }
-        Row(
-            modifier = Modifier.padding(top = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (isBusy) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp))
-            } else {
-                Button(onClick = onApprove) { Text("APPROVE") }
-                Button(
-                    onClick = onDecline,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                ) { Text("DECLINE") }
+            Row(
+                modifier = Modifier.padding(top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (isBusy) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                } else {
+                    GlassButton(text = "Approve", onClick = onApprove, tint = BubbleSuccess)
+                    GlassButton(text = "Decline", onClick = onDecline, tint = BubbleError)
+                }
             }
         }
     }
-    HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 }

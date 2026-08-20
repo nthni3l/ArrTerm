@@ -2,16 +2,21 @@ package com.arrterm.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val TermBackground = Color(0xFF0A0E0A)
-val TermSurface = Color(0xFF10160F)
-val TermSurfaceVariant = Color(0xFF1A231A)
-val TermOutline = Color(0xFF2E3B2E)
+// Airy light-blue-and-white "crystal" palette
+val SkyBackground = Color(0xFFF3F9FF)
+val SkyBackgroundDeep = Color(0xFFDCEEFF)
+val CloudWhite = Color(0xFFFFFFFF)
+val GlassSurface = Color(0xFFFFFFFF)
+val GlassSurfaceVariant = Color(0xFFE7F3FE)
 
-val TermGreen = Color(0xFF33FF66)
-val TermGreenDim = Color(0xFF1FA347)
-val TermAmber = Color(0xFFFFB000)
-val TermRed = Color(0xFFFF4444)
-val TermCyan = Color(0xFF4DFFEA)
+val SkyBlue = Color(0xFF4FC3F7)
+val SkyBlueDeep = Color(0xFF29B6F6)
+val SkyBluePale = Color(0xFFB3E5FC)
+val Aqua = Color(0xFF80DEEA)
 
-val TermTextPrimary = Color(0xFFD8FFE0)
-val TermTextSecondary = Color(0xFF7FAF8A)
+val InkPrimary = Color(0xFF1B3A4B)
+val InkSecondary = Color(0xFF5C7A8A)
+
+val BubbleSuccess = Color(0xFF34C759)
+val BubbleWarning = Color(0xFFFFB020)
+val BubbleError = Color(0xFFFF5A6E)

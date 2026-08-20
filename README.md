@@ -8,10 +8,13 @@ Distributed as a sideloaded debug APK (no Play Store).
 
 ## Features
 
+- Light, airy "crystal bubble" UI — translucent glass surfaces on every interactive
+  element (buttons, badges, cards, nav bar)
 - Per-service (Radarr / Sonarr / Overseerr) settings screen with URL + API key entry and a
   "Test Connection" check
-- Radarr: movie library and download queue
-- Sonarr: series library and download queue
+- Radarr: movie library and download queue, tap into a movie to search for a release,
+  toggle monitored, or delete it
+- Sonarr: series library and download queue, tap into a series for the same actions
 - Overseerr: pending requests with Approve / Decline
 
 ## Building
