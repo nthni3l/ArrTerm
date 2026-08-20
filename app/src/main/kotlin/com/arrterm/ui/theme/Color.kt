@@ -2,21 +2,29 @@ package com.arrterm.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Airy light-blue-and-white "crystal" palette
-val SkyBackground = Color(0xFFF3F9FF)
-val SkyBackgroundDeep = Color(0xFFDCEEFF)
-val CloudWhite = Color(0xFFFFFFFF)
-val GlassSurface = Color(0xFFFFFFFF)
-val GlassSurfaceVariant = Color(0xFFE7F3FE)
+// Dark palette from the imported "ArrTerm Mobile" design
+val AppBackground = Color(0xFF17191A)
+val CardSurface = Color(0xFF1E2123)
+val CardBorder = Color(0x14FFFFFF) // white @ 8%
 
-val SkyBlue = Color(0xFF4FC3F7)
-val SkyBlueDeep = Color(0xFF29B6F6)
-val SkyBluePale = Color(0xFFB3E5FC)
-val Aqua = Color(0xFF80DEEA)
+val TextPrimary = Color(0xFFEDEFEF)
+val TextBody = Color(0xFFC7CDCB)
+val TextSecondary = Color(0xFF9AA1A0)
+val TextMuted = Color(0xFF6E7574)
 
-val InkPrimary = Color(0xFF1B3A4B)
-val InkSecondary = Color(0xFF5C7A8A)
+val AccentGreen = Color(0xFF2E9C6F)
+val ApproveGreen = Color(0xFF6EBE8F)
+val StatusSuccess = Color(0xFF4FBE8C)
+val StatusWarning = Color(0xFFE0A458)
+// The design defines an unused C.error (#E2665A) but every actual delete/decline
+// element (buttons, borders, dialog) hardcodes this slightly different red instead.
+val StatusError = Color(0xFFE0645A)
 
-val BubbleSuccess = Color(0xFF34C759)
-val BubbleWarning = Color(0xFFFFB020)
-val BubbleError = Color(0xFFFF5A6E)
+val OnAccent = Color(0xFF17140F)
+val ToastBackground = Color(0xFFEDEFEF)
+val ToastText = Color(0xFF17191A)
+
+val PosterStripeDark = Color(0xFF202426)
+val PosterStripeLight = Color(0xFF2A2F31)
+
+val DeleteScrim = Color(0x73FFFFFF) // white @ 45%, matches the design's inverted scrim

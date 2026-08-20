@@ -3,46 +3,43 @@ package com.arrterm.ui.theme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 
-private val SkyColorScheme = lightColorScheme(
-    primary = SkyBlueDeep,
-    onPrimary = CloudWhite,
-    secondary = Aqua,
-    onSecondary = InkPrimary,
-    tertiary = SkyBluePale,
-    background = SkyBackground,
-    onBackground = InkPrimary,
-    surface = GlassSurface,
-    onSurface = InkPrimary,
-    surfaceVariant = GlassSurfaceVariant,
-    onSurfaceVariant = InkSecondary,
-    outline = SkyBluePale,
-    error = BubbleError,
-    onError = CloudWhite,
+private val ArrDarkColorScheme = darkColorScheme(
+    primary = AccentGreen,
+    onPrimary = OnAccent,
+    secondary = ApproveGreen,
+    onSecondary = OnAccent,
+    tertiary = StatusWarning,
+    background = AppBackground,
+    onBackground = TextPrimary,
+    surface = CardSurface,
+    onSurface = TextPrimary,
+    surfaceVariant = CardSurface,
+    onSurfaceVariant = TextSecondary,
+    outline = CardBorder,
+    error = StatusError,
+    onError = TextPrimary,
 )
 
-private val BubbleShapes = Shapes(
-    extraSmall = RoundedCornerShape(12.dp),
-    small = RoundedCornerShape(16.dp),
-    medium = RoundedCornerShape(20.dp),
-    large = RoundedCornerShape(28.dp),
-    extraLarge = RoundedCornerShape(36.dp),
-)
+val PillShape = RoundedCornerShape(100)
 
-/** The airy sky-gradient painted behind every screen. */
-val SkyGradient: Brush
-    @Composable get() = Brush.verticalGradient(listOf(CloudWhite, SkyBackground, SkyBackgroundDeep))
+private val ArrShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(14.dp),
+    large = RoundedCornerShape(16.dp),
+    extraLarge = PillShape,
+)
 
 @Composable
 fun ArrTermTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = SkyColorScheme,
+        colorScheme = ArrDarkColorScheme,
         typography = TermTypography,
-        shapes = BubbleShapes,
+        shapes = ArrShapes,
         content = content,
     )
 }

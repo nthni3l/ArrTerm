@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.3.0 — Imported design implementation
+
+Replaced the crystal-bubble theme with a design imported from Claude Design
+(`ArrTerm Mobile.dc.html`): a dark, refined UI using Sora (headings/body) and
+JetBrains Mono (labels/data) typography, a muted-green accent, and pill-shaped
+buttons throughout.
+
+- New color system: dark app background (#17191A), card surfaces (#1E2123) with
+  subtle borders, accent green (#2E9C6F), and dedicated success/warning/error tones
+- Bottom navigation redrawn as pure-shape icons (diamond, rounded rect, circle, ring)
+  instead of Material icons, matching the design's icon-free visual language
+- Poster placeholders (diagonal-stripe pattern) on library rows and the detail banner
+- App-wide floating toast (Saved / Search started / Approved / Declined / etc.) and a
+  full-screen delete-confirmation dialog that dims the whole app including the nav bar
+- Settings, Radarr, Sonarr, Overseerr, and both detail screens restyled to match the
+  spec's card layout, badge colors, and button treatments exactly
+
 ## v0.2.0 — Crystal UI overhaul + item detail screens
 
 - **Complete visual redesign**: replaced the dark terminal theme with a light, airy,
