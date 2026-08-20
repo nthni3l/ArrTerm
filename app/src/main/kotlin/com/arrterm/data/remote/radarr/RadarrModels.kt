@@ -3,6 +3,13 @@ package com.arrterm.data.remote.radarr
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class RadarrImage(
+    val coverType: String = "",
+    val url: String? = null,
+    val remoteUrl: String? = null,
+)
+
+@Serializable
 data class RadarrMovie(
     val id: Int = 0,
     val title: String = "",
@@ -11,7 +18,12 @@ data class RadarrMovie(
     val hasFile: Boolean = false,
     val status: String = "",
     val sizeOnDisk: Long = 0,
-)
+    val images: List<RadarrImage> = emptyList(),
+) {
+    /** Path relative to the server root, e.g. "/MediaCover/123/poster.jpg?lastWrite=..." */
+    val posterPath: String?
+        get() = images.firstOrNull { it.coverType == "poster" }?.url
+}
 
 @Serializable
 data class RadarrQueueItem(

@@ -26,9 +26,10 @@ import com.arrterm.data.remote.sonarr.SonarrSeries
 import com.arrterm.ui.common.AppCard
 import com.arrterm.ui.common.FullScreenError
 import com.arrterm.ui.common.FullScreenLoading
+import com.arrterm.data.settings.ServerConfig
 import com.arrterm.ui.common.NotConfiguredPlaceholder
-import com.arrterm.ui.common.PosterPlaceholder
 import com.arrterm.ui.common.SectionLabel
+import com.arrterm.ui.common.ServerImage
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.TabTopBar
 import com.arrterm.ui.common.UiState
@@ -59,6 +60,7 @@ fun SonarrScreen(
             is UiState.Success -> SonarrContent(
                 series = s.data.series,
                 queue = s.data.queue,
+                config = s.data.config,
                 onSeriesClick = onSeriesClick,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -70,6 +72,7 @@ fun SonarrScreen(
 private fun SonarrContent(
     series: List<SonarrSeries>,
     queue: List<SonarrQueueItem>,
+    config: ServerConfig,
     onSeriesClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -83,7 +86,7 @@ private fun SonarrContent(
         }
         item { SectionLabel("Library (${series.size})") }
         items(series, key = { it.id }) {
-            SeriesRow(it, onClick = { onSeriesClick(it.id) })
+            SeriesRow(it, config, onClick = { onSeriesClick(it.id) })
             androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
         }
     }
@@ -115,7 +118,7 @@ private fun QueueRow(item: SonarrQueueItem) {
 }
 
 @Composable
-private fun SeriesRow(series: SonarrSeries, onClick: () -> Unit) {
+private fun SeriesRow(series: SonarrSeries, config: ServerConfig, onClick: () -> Unit) {
     AppCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
         Row(
             modifier = Modifier
@@ -124,7 +127,11 @@ private fun SeriesRow(series: SonarrSeries, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            PosterPlaceholder(modifier = Modifier.size(width = 44.dp, height = 64.dp))
+            ServerImage(
+                url = config.resolve(series.posterPath),
+                apiKey = config.apiKey,
+                modifier = Modifier.size(width = 44.dp, height = 64.dp),
+            )
             Column(modifier = Modifier.weight(1f)) {
                 Text(series.title, color = TextPrimary, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 androidx.compose.foundation.layout.Spacer(Modifier.padding(top = 3.dp))

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.0 — Real poster artwork
+
+- Radarr and Sonarr library rows, and both detail screens, now show the actual poster
+  fetched from the configured server (same source Radarr/Sonarr's own web UI uses),
+  authenticated with the same per-service API key — no separate image API key needed
+- Falls back to the striped placeholder when a title has no poster yet or the image
+  fails to load
+
 ## v0.3.0 — Imported design implementation
 
 Replaced the crystal-bubble theme with a design imported from Claude Design

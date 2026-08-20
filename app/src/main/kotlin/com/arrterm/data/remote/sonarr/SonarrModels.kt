@@ -3,6 +3,13 @@ package com.arrterm.data.remote.sonarr
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class SonarrImage(
+    val coverType: String = "",
+    val url: String? = null,
+    val remoteUrl: String? = null,
+)
+
+@Serializable
 data class SonarrSeries(
     val id: Int = 0,
     val title: String = "",
@@ -11,7 +18,11 @@ data class SonarrSeries(
     val status: String = "",
     val seasonCount: Int = 0,
     val statistics: SonarrSeriesStatistics = SonarrSeriesStatistics(),
-)
+    val images: List<SonarrImage> = emptyList(),
+) {
+    val posterPath: String?
+        get() = images.firstOrNull { it.coverType == "poster" }?.url
+}
 
 @Serializable
 data class SonarrSeriesStatistics(

@@ -7,6 +7,7 @@ import com.arrterm.data.remote.ApiClientFactory
 import com.arrterm.data.remote.radarr.RadarrApi
 import com.arrterm.data.remote.radarr.RadarrMovie
 import com.arrterm.data.remote.radarr.RadarrQueueItem
+import com.arrterm.data.settings.ServerConfig
 import com.arrterm.data.settings.ServerConfigRepository
 import com.arrterm.data.settings.ServiceType
 import com.arrterm.ui.common.UiState
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 data class RadarrData(
     val movies: List<RadarrMovie>,
     val queue: List<RadarrQueueItem>,
+    val config: ServerConfig,
 )
 
 class RadarrViewModel(private val repository: ServerConfigRepository) : ViewModel() {
@@ -41,7 +43,7 @@ class RadarrViewModel(private val repository: ServerConfigRepository) : ViewMode
                 val api = ApiClientFactory.create<RadarrApi>(config)
                 val movies = api.getMovies()
                 val queue = api.getQueue().records
-                _state.value = UiState.Success(RadarrData(movies, queue))
+                _state.value = UiState.Success(RadarrData(movies, queue, config))
             } catch (t: Throwable) {
                 _state.value = UiState.Error(t.message ?: "Failed to load Radarr data")
             }

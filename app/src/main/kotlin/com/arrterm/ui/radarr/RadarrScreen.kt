@@ -23,9 +23,10 @@ import com.arrterm.data.remote.radarr.RadarrQueueItem
 import com.arrterm.ui.common.AppCard
 import com.arrterm.ui.common.FullScreenError
 import com.arrterm.ui.common.FullScreenLoading
+import com.arrterm.data.settings.ServerConfig
 import com.arrterm.ui.common.NotConfiguredPlaceholder
-import com.arrterm.ui.common.PosterPlaceholder
 import com.arrterm.ui.common.SectionLabel
+import com.arrterm.ui.common.ServerImage
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.TabTopBar
 import com.arrterm.ui.common.UiState
@@ -54,6 +55,7 @@ fun RadarrScreen(
             is UiState.Success -> RadarrContent(
                 movies = s.data.movies,
                 queue = s.data.queue,
+                config = s.data.config,
                 onMovieClick = onMovieClick,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -65,6 +67,7 @@ fun RadarrScreen(
 private fun RadarrContent(
     movies: List<RadarrMovie>,
     queue: List<RadarrQueueItem>,
+    config: ServerConfig,
     onMovieClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -78,7 +81,7 @@ private fun RadarrContent(
         }
         item { SectionLabel("Library (${movies.size})") }
         items(movies, key = { it.id }) {
-            MovieRow(it, onClick = { onMovieClick(it.id) })
+            MovieRow(it, config, onClick = { onMovieClick(it.id) })
             androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
         }
     }
@@ -120,7 +123,7 @@ private fun QueueRow(item: RadarrQueueItem) {
 }
 
 @Composable
-private fun MovieRow(movie: RadarrMovie, onClick: () -> Unit) {
+private fun MovieRow(movie: RadarrMovie, config: ServerConfig, onClick: () -> Unit) {
     AppCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
         Row(
             modifier = Modifier
@@ -129,7 +132,11 @@ private fun MovieRow(movie: RadarrMovie, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            PosterPlaceholder(modifier = Modifier.size(width = 44.dp, height = 64.dp))
+            ServerImage(
+                url = config.resolve(movie.posterPath),
+                apiKey = config.apiKey,
+                modifier = Modifier.size(width = 44.dp, height = 64.dp),
+            )
             Column(modifier = Modifier.weight(1f)) {
                 androidx.compose.material3.Text(
                     movie.title,

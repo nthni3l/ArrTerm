@@ -23,7 +23,7 @@ import com.arrterm.ui.common.FullScreenError
 import com.arrterm.ui.common.FullScreenLoading
 import com.arrterm.ui.common.NotConfiguredPlaceholder
 import com.arrterm.ui.common.PillButton
-import com.arrterm.ui.common.PosterPlaceholder
+import com.arrterm.ui.common.ServerImage
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.ToastBus
 import com.arrterm.ui.common.UiState
@@ -85,12 +85,14 @@ private fun MovieDetailContent(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
-        PosterPlaceholder(
+        ServerImage(
+            url = movie.config.resolve(movie.posterPath),
+            apiKey = movie.config.apiKey,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp),
             shape = androidx.compose.ui.graphics.RectangleShape,
-            label = "POSTER PLACEHOLDER",
+            placeholderLabel = "POSTER PLACEHOLDER",
         )
         Column(modifier = Modifier.padding(16.dp)) {
             Text(

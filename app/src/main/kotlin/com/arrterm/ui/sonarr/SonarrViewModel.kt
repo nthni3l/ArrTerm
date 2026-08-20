@@ -7,6 +7,7 @@ import com.arrterm.data.remote.ApiClientFactory
 import com.arrterm.data.remote.sonarr.SonarrApi
 import com.arrterm.data.remote.sonarr.SonarrQueueItem
 import com.arrterm.data.remote.sonarr.SonarrSeries
+import com.arrterm.data.settings.ServerConfig
 import com.arrterm.data.settings.ServerConfigRepository
 import com.arrterm.data.settings.ServiceType
 import com.arrterm.ui.common.UiState
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 data class SonarrData(
     val series: List<SonarrSeries>,
     val queue: List<SonarrQueueItem>,
+    val config: ServerConfig,
 )
 
 class SonarrViewModel(private val repository: ServerConfigRepository) : ViewModel() {
@@ -41,7 +43,7 @@ class SonarrViewModel(private val repository: ServerConfigRepository) : ViewMode
                 val api = ApiClientFactory.create<SonarrApi>(config)
                 val series = api.getSeries()
                 val queue = api.getQueue().records
-                _state.value = UiState.Success(SonarrData(series, queue))
+                _state.value = UiState.Success(SonarrData(series, queue, config))
             } catch (t: Throwable) {
                 _state.value = UiState.Error(t.message ?: "Failed to load Sonarr data")
             }

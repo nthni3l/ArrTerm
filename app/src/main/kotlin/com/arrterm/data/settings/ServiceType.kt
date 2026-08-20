@@ -16,4 +16,7 @@ data class ServerConfig(
     /** baseUrl with no trailing slash, e.g. "http://192.168.1.50:7878" */
     val normalizedBaseUrl: String
         get() = baseUrl.trim().trimEnd('/')
+
+    /** Resolves a server-relative resource path (e.g. a poster's "url" field) to a full URL. */
+    fun resolve(path: String?): String? = path?.let { normalizedBaseUrl + it }
 }

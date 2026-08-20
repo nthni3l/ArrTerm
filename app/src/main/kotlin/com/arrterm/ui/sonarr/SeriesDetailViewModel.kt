@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.arrterm.data.remote.ApiClientFactory
 import com.arrterm.data.remote.sonarr.SonarrApi
 import com.arrterm.data.remote.sonarr.SonarrSearchCommand
+import com.arrterm.data.settings.ServerConfig
 import com.arrterm.data.settings.ServerConfigRepository
 import com.arrterm.data.settings.ServiceType
 import com.arrterm.ui.common.UiState
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -35,10 +37,12 @@ data class SeriesDetail(
     val episodeFileCount: Int,
     val episodeCount: Int,
     val path: String,
+    val posterPath: String?,
+    val config: ServerConfig,
     val raw: JsonObject,
 )
 
-private fun JsonObject.toSeriesDetail(): SeriesDetail {
+private fun JsonObject.toSeriesDetail(config: ServerConfig): SeriesDetail {
     val stats = this["statistics"]?.jsonObject
     return SeriesDetail(
         id = this["id"]?.jsonPrimitive?.intOrNull ?: 0,
@@ -50,6 +54,11 @@ private fun JsonObject.toSeriesDetail(): SeriesDetail {
         episodeFileCount = stats?.get("episodeFileCount")?.jsonPrimitive?.intOrNull ?: 0,
         episodeCount = stats?.get("episodeCount")?.jsonPrimitive?.intOrNull ?: 0,
         path = this["path"]?.jsonPrimitive?.contentOrNull ?: "",
+        posterPath = (this["images"] as? JsonArray)
+            ?.mapNotNull { it.jsonObject }
+            ?.firstOrNull { it["coverType"]?.jsonPrimitive?.contentOrNull == "poster" }
+            ?.get("url")?.jsonPrimitive?.contentOrNull,
+        config = config,
         raw = this,
     )
 }
@@ -82,7 +91,7 @@ class SeriesDetailViewModel(
         viewModelScope.launch {
             try {
                 val raw = ApiClientFactory.create<SonarrApi>(config).getSeriesRaw(seriesId)
-                _state.value = UiState.Success(raw.toSeriesDetail())
+                _state.value = UiState.Success(raw.toSeriesDetail(config))
             } catch (t: Throwable) {
                 _state.value = UiState.Error(t.message ?: "Failed to load series")
             }
@@ -117,7 +126,7 @@ class SeriesDetailViewModel(
                 })
                 val api = ApiClientFactory.create<SonarrApi>(config)
                 val updated = api.updateSeriesRaw(seriesId, mutated)
-                _state.value = UiState.Success(updated.toSeriesDetail())
+                _state.value = UiState.Success(updated.toSeriesDetail(config))
             } catch (t: Throwable) {
                 _events.emit(DetailAction.Error(t.message ?: "Update failed"))
             }
