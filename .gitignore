@@ -1,0 +1,24 @@
+# Local, project-bootstrapped toolchain (JDK, Android SDK, Gradle, gh CLI) - multi-GB, machine-specific
+/tools/
+
+# Build outputs
+/build/
+/app/build/
+*.apk
+*.aab
+
+# Local machine-specific config (absolute paths to the local toolchain)
+local.properties
+
+# Gradle
+.gradle/
+gradle-app.setting
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

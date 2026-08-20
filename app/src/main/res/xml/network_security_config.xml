@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This app talks only to servers the user explicitly points it at (their own
+  Radarr/Sonarr/Overseerr instances), which are very commonly plain HTTP on a
+  LAN. Cleartext is allowed for all domains since the destination host isn't
+  known ahead of time and can't be allowlisted. No certificate trust is
+  overridden; HTTPS still validates normally.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
