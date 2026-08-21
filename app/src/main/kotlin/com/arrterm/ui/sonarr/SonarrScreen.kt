@@ -1,6 +1,7 @@
 package com.arrterm.ui.sonarr
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -34,7 +35,6 @@ import com.arrterm.ui.common.FullScreenError
 import com.arrterm.ui.common.FullScreenLoading
 import com.arrterm.ui.common.NotConfiguredPlaceholder
 import com.arrterm.ui.common.SearchField
-import com.arrterm.ui.common.SectionLabel
 import com.arrterm.ui.common.ServerImage
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.TabTopBar
@@ -46,6 +46,8 @@ import com.arrterm.ui.theme.StatusSuccess
 import com.arrterm.ui.theme.TextMuted
 import com.arrterm.ui.theme.TextPrimary
 import com.arrterm.ui.theme.TextSecondary
+
+private enum class SonarrSubTab { LIBRARY, QUEUE }
 
 private enum class SeriesFilter(val label: String) {
     ALL("All"),
@@ -64,6 +66,7 @@ fun SonarrScreen(
     val state by viewModel.state.collectAsState()
     var query by rememberSaveable { mutableStateOf("") }
     var filterIndex by rememberSaveable { mutableIntStateOf(0) }
+    var subTabIndex by rememberSaveable { mutableIntStateOf(0) }
 
     Column(modifier = modifier.fillMaxSize()) {
         val count = (state as? UiState.Success)?.data?.series?.size ?: 0
@@ -81,6 +84,8 @@ fun SonarrScreen(
                 onQueryChange = { query = it },
                 filterIndex = filterIndex,
                 onFilterChange = { filterIndex = it },
+                subTabIndex = subTabIndex,
+                onSubTabChange = { subTabIndex = it },
                 onSeriesClick = onSeriesClick,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -97,9 +102,12 @@ private fun SonarrContent(
     onQueryChange: (String) -> Unit,
     filterIndex: Int,
     onFilterChange: (Int) -> Unit,
+    subTabIndex: Int,
+    onSubTabChange: (Int) -> Unit,
     onSeriesClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val subTab = SonarrSubTab.entries[subTabIndex]
     val filter = SeriesFilter.entries[filterIndex]
     val filtered = series.filter { s ->
         (query.isBlank() || s.title.contains(query, ignoreCase = true)) &&
@@ -112,32 +120,55 @@ private fun SonarrContent(
     }
 
     Column(modifier = modifier) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            SearchField(
-                value = query,
-                onValueChange = onQueryChange,
-                placeholder = "Search series…",
-                modifier = Modifier.fillMaxWidth(),
-            )
-            androidx.compose.foundation.layout.Spacer(Modifier.padding(top = 10.dp))
-            FilterChipRow(
-                labels = SeriesFilter.entries.map { it.label },
-                selectedIndex = filterIndex,
-                onSelect = onFilterChange,
-            )
-        }
-        LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-            if (queue.isNotEmpty() && query.isBlank() && filter == SeriesFilter.ALL) {
-                item { SectionLabel("Queue (${queue.size})") }
-                items(queue, key = { "q${it.id}" }) {
-                    QueueRow(it)
-                    androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+        FilterChipRow(
+            labels = listOf("Library (${series.size})", "Queue (${queue.size})"),
+            selectedIndex = subTabIndex,
+            onSelect = onSubTabChange,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+
+        when (subTab) {
+            SonarrSubTab.LIBRARY -> {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    SearchField(
+                        value = query,
+                        onValueChange = onQueryChange,
+                        placeholder = "Search series…",
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    androidx.compose.foundation.layout.Spacer(Modifier.padding(top = 10.dp))
+                    FilterChipRow(
+                        labels = SeriesFilter.entries.map { it.label },
+                        selectedIndex = filterIndex,
+                        onSelect = onFilterChange,
+                    )
+                }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    items(filtered, key = { it.id }) {
+                        SeriesRow(it, config, onClick = { onSeriesClick(it.id) })
+                        androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+                    }
                 }
             }
-            item { SectionLabel("Library (${filtered.size})") }
-            items(filtered, key = { it.id }) {
-                SeriesRow(it, config, onClick = { onSeriesClick(it.id) })
-                androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+            SonarrSubTab.QUEUE -> {
+                if (queue.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Queue is empty", color = TextMuted, style = MaterialTheme.typography.bodyMedium)
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    ) {
+                        items(queue, key = { it.id }) {
+                            QueueRow(it)
+                            androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+                        }
+                    }
+                }
             }
         }
     }

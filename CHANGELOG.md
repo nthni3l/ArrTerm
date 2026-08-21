@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.7.0 — Library/Queue sub-tabs
+
+- Radarr and Sonarr now split into a **Library** / **Queue** sub-tab switcher instead of
+  one long scrolling list with both sections stacked
+- Search and status filters live on the Library sub-tab only; Queue is its own plain list
+  with an empty state when there's nothing downloading
+
 ## v0.6.0 — Search and status filters
 
 - Radarr and Sonarr library lists now have a search field (filters by title as you type)

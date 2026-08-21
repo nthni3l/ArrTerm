@@ -1,6 +1,7 @@
 package com.arrterm.ui.radarr
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,7 +33,6 @@ import com.arrterm.ui.common.FullScreenError
 import com.arrterm.ui.common.FullScreenLoading
 import com.arrterm.ui.common.NotConfiguredPlaceholder
 import com.arrterm.ui.common.SearchField
-import com.arrterm.ui.common.SectionLabel
 import com.arrterm.ui.common.ServerImage
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.TabTopBar
@@ -41,6 +42,8 @@ import com.arrterm.ui.theme.AccentGreen
 import com.arrterm.ui.theme.StatusSuccess
 import com.arrterm.ui.theme.TextMuted
 import com.arrterm.ui.theme.TextPrimary
+
+private enum class RadarrSubTab { LIBRARY, QUEUE }
 
 private enum class MovieFilter(val label: String) {
     ALL("All"),
@@ -59,6 +62,7 @@ fun RadarrScreen(
     val state by viewModel.state.collectAsState()
     var query by rememberSaveable { mutableStateOf("") }
     var filterIndex by rememberSaveable { mutableIntStateOf(0) }
+    var subTabIndex by rememberSaveable { mutableIntStateOf(0) }
 
     Column(modifier = modifier.fillMaxSize()) {
         val count = (state as? UiState.Success)?.data?.movies?.size ?: 0
@@ -76,6 +80,8 @@ fun RadarrScreen(
                 onQueryChange = { query = it },
                 filterIndex = filterIndex,
                 onFilterChange = { filterIndex = it },
+                subTabIndex = subTabIndex,
+                onSubTabChange = { subTabIndex = it },
                 onMovieClick = onMovieClick,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -92,9 +98,12 @@ private fun RadarrContent(
     onQueryChange: (String) -> Unit,
     filterIndex: Int,
     onFilterChange: (Int) -> Unit,
+    subTabIndex: Int,
+    onSubTabChange: (Int) -> Unit,
     onMovieClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val subTab = RadarrSubTab.entries[subTabIndex]
     val filter = MovieFilter.entries[filterIndex]
     val filtered = movies.filter { movie ->
         (query.isBlank() || movie.title.contains(query, ignoreCase = true)) &&
@@ -107,32 +116,55 @@ private fun RadarrContent(
     }
 
     Column(modifier = modifier) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            SearchField(
-                value = query,
-                onValueChange = onQueryChange,
-                placeholder = "Search movies…",
-                modifier = Modifier.fillMaxWidth(),
-            )
-            androidx.compose.foundation.layout.Spacer(Modifier.padding(top = 10.dp))
-            FilterChipRow(
-                labels = MovieFilter.entries.map { it.label },
-                selectedIndex = filterIndex,
-                onSelect = onFilterChange,
-            )
-        }
-        LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-            if (queue.isNotEmpty() && query.isBlank() && filter == MovieFilter.ALL) {
-                item { SectionLabel("Queue (${queue.size})") }
-                items(queue, key = { "q${it.id}" }) {
-                    QueueRow(it)
-                    androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+        FilterChipRow(
+            labels = listOf("Library (${movies.size})", "Queue (${queue.size})"),
+            selectedIndex = subTabIndex,
+            onSelect = onSubTabChange,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+
+        when (subTab) {
+            RadarrSubTab.LIBRARY -> {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    SearchField(
+                        value = query,
+                        onValueChange = onQueryChange,
+                        placeholder = "Search movies…",
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    androidx.compose.foundation.layout.Spacer(Modifier.padding(top = 10.dp))
+                    FilterChipRow(
+                        labels = MovieFilter.entries.map { it.label },
+                        selectedIndex = filterIndex,
+                        onSelect = onFilterChange,
+                    )
+                }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    items(filtered, key = { it.id }) {
+                        MovieRow(it, config, onClick = { onMovieClick(it.id) })
+                        androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+                    }
                 }
             }
-            item { SectionLabel("Library (${filtered.size})") }
-            items(filtered, key = { it.id }) {
-                MovieRow(it, config, onClick = { onMovieClick(it.id) })
-                androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+            RadarrSubTab.QUEUE -> {
+                if (queue.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Queue is empty", color = TextMuted, style = MaterialTheme.typography.bodyMedium)
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    ) {
+                        items(queue, key = { it.id }) {
+                            QueueRow(it)
+                            androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+                        }
+                    }
+                }
             }
         }
     }
