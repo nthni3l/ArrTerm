@@ -15,26 +15,39 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arrterm.data.remote.radarr.RadarrMovie
 import com.arrterm.data.remote.radarr.RadarrQueueItem
+import com.arrterm.data.settings.ServerConfig
 import com.arrterm.ui.common.AppCard
+import com.arrterm.ui.common.FilterChipRow
 import com.arrterm.ui.common.FullScreenError
 import com.arrterm.ui.common.FullScreenLoading
-import com.arrterm.data.settings.ServerConfig
 import com.arrterm.ui.common.NotConfiguredPlaceholder
+import com.arrterm.ui.common.SearchField
 import com.arrterm.ui.common.SectionLabel
 import com.arrterm.ui.common.ServerImage
-import com.arrterm.ui.common.posterRef
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.TabTopBar
 import com.arrterm.ui.common.UiState
+import com.arrterm.ui.common.posterRef
 import com.arrterm.ui.theme.AccentGreen
 import com.arrterm.ui.theme.StatusSuccess
 import com.arrterm.ui.theme.TextMuted
 import com.arrterm.ui.theme.TextPrimary
+
+private enum class MovieFilter(val label: String) {
+    ALL("All"),
+    DOWNLOADED("Downloaded"),
+    MONITORED("Monitored"),
+    UNMONITORED("Unmonitored"),
+}
 
 @Composable
 fun RadarrScreen(
@@ -44,6 +57,8 @@ fun RadarrScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsState()
+    var query by rememberSaveable { mutableStateOf("") }
+    var filterIndex by rememberSaveable { mutableIntStateOf(0) }
 
     Column(modifier = modifier.fillMaxSize()) {
         val count = (state as? UiState.Success)?.data?.movies?.size ?: 0
@@ -57,6 +72,10 @@ fun RadarrScreen(
                 movies = s.data.movies,
                 queue = s.data.queue,
                 config = s.data.config,
+                query = query,
+                onQueryChange = { query = it },
+                filterIndex = filterIndex,
+                onFilterChange = { filterIndex = it },
                 onMovieClick = onMovieClick,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -69,21 +88,52 @@ private fun RadarrContent(
     movies: List<RadarrMovie>,
     queue: List<RadarrQueueItem>,
     config: ServerConfig,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    filterIndex: Int,
+    onFilterChange: (Int) -> Unit,
     onMovieClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier, contentPadding = PaddingValues(16.dp)) {
-        if (queue.isNotEmpty()) {
-            item { SectionLabel("Queue (${queue.size})") }
-            items(queue, key = { "q${it.id}" }) {
-                QueueRow(it)
+    val filter = MovieFilter.entries[filterIndex]
+    val filtered = movies.filter { movie ->
+        (query.isBlank() || movie.title.contains(query, ignoreCase = true)) &&
+            when (filter) {
+                MovieFilter.ALL -> true
+                MovieFilter.DOWNLOADED -> movie.hasFile
+                MovieFilter.MONITORED -> movie.monitored
+                MovieFilter.UNMONITORED -> !movie.monitored
+            }
+    }
+
+    Column(modifier = modifier) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            SearchField(
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = "Search movies…",
+                modifier = Modifier.fillMaxWidth(),
+            )
+            androidx.compose.foundation.layout.Spacer(Modifier.padding(top = 10.dp))
+            FilterChipRow(
+                labels = MovieFilter.entries.map { it.label },
+                selectedIndex = filterIndex,
+                onSelect = onFilterChange,
+            )
+        }
+        LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
+            if (queue.isNotEmpty() && query.isBlank() && filter == MovieFilter.ALL) {
+                item { SectionLabel("Queue (${queue.size})") }
+                items(queue, key = { "q${it.id}" }) {
+                    QueueRow(it)
+                    androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+                }
+            }
+            item { SectionLabel("Library (${filtered.size})") }
+            items(filtered, key = { it.id }) {
+                MovieRow(it, config, onClick = { onMovieClick(it.id) })
                 androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
             }
-        }
-        item { SectionLabel("Library (${movies.size})") }
-        items(movies, key = { it.id }) {
-            MovieRow(it, config, onClick = { onMovieClick(it.id) })
-            androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
         }
     }
 }

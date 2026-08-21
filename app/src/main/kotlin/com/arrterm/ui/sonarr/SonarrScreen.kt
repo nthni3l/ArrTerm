@@ -16,6 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,23 +27,32 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.arrterm.data.remote.sonarr.SonarrQueueItem
 import com.arrterm.data.remote.sonarr.SonarrSeries
+import com.arrterm.data.settings.ServerConfig
 import com.arrterm.ui.common.AppCard
+import com.arrterm.ui.common.FilterChipRow
 import com.arrterm.ui.common.FullScreenError
 import com.arrterm.ui.common.FullScreenLoading
-import com.arrterm.data.settings.ServerConfig
 import com.arrterm.ui.common.NotConfiguredPlaceholder
+import com.arrterm.ui.common.SearchField
 import com.arrterm.ui.common.SectionLabel
 import com.arrterm.ui.common.ServerImage
-import com.arrterm.ui.common.posterRef
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.TabTopBar
 import com.arrterm.ui.common.UiState
+import com.arrterm.ui.common.posterRef
 import com.arrterm.ui.theme.AccentGreen
 import com.arrterm.ui.theme.JetBrainsMono
 import com.arrterm.ui.theme.StatusSuccess
 import com.arrterm.ui.theme.TextMuted
 import com.arrterm.ui.theme.TextPrimary
 import com.arrterm.ui.theme.TextSecondary
+
+private enum class SeriesFilter(val label: String) {
+    ALL("All"),
+    COMPLETE("Complete"),
+    MONITORED("Monitored"),
+    UNMONITORED("Unmonitored"),
+}
 
 @Composable
 fun SonarrScreen(
@@ -49,6 +62,8 @@ fun SonarrScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsState()
+    var query by rememberSaveable { mutableStateOf("") }
+    var filterIndex by rememberSaveable { mutableIntStateOf(0) }
 
     Column(modifier = modifier.fillMaxSize()) {
         val count = (state as? UiState.Success)?.data?.series?.size ?: 0
@@ -62,6 +77,10 @@ fun SonarrScreen(
                 series = s.data.series,
                 queue = s.data.queue,
                 config = s.data.config,
+                query = query,
+                onQueryChange = { query = it },
+                filterIndex = filterIndex,
+                onFilterChange = { filterIndex = it },
                 onSeriesClick = onSeriesClick,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -74,21 +93,52 @@ private fun SonarrContent(
     series: List<SonarrSeries>,
     queue: List<SonarrQueueItem>,
     config: ServerConfig,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    filterIndex: Int,
+    onFilterChange: (Int) -> Unit,
     onSeriesClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier, contentPadding = PaddingValues(16.dp)) {
-        if (queue.isNotEmpty()) {
-            item { SectionLabel("Queue (${queue.size})") }
-            items(queue, key = { "q${it.id}" }) {
-                QueueRow(it)
+    val filter = SeriesFilter.entries[filterIndex]
+    val filtered = series.filter { s ->
+        (query.isBlank() || s.title.contains(query, ignoreCase = true)) &&
+            when (filter) {
+                SeriesFilter.ALL -> true
+                SeriesFilter.COMPLETE -> s.statistics.episodeCount > 0 && s.statistics.episodeFileCount >= s.statistics.episodeCount
+                SeriesFilter.MONITORED -> s.monitored
+                SeriesFilter.UNMONITORED -> !s.monitored
+            }
+    }
+
+    Column(modifier = modifier) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            SearchField(
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = "Search series…",
+                modifier = Modifier.fillMaxWidth(),
+            )
+            androidx.compose.foundation.layout.Spacer(Modifier.padding(top = 10.dp))
+            FilterChipRow(
+                labels = SeriesFilter.entries.map { it.label },
+                selectedIndex = filterIndex,
+                onSelect = onFilterChange,
+            )
+        }
+        LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
+            if (queue.isNotEmpty() && query.isBlank() && filter == SeriesFilter.ALL) {
+                item { SectionLabel("Queue (${queue.size})") }
+                items(queue, key = { "q${it.id}" }) {
+                    QueueRow(it)
+                    androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
+                }
+            }
+            item { SectionLabel("Library (${filtered.size})") }
+            items(filtered, key = { it.id }) {
+                SeriesRow(it, config, onClick = { onSeriesClick(it.id) })
                 androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
             }
-        }
-        item { SectionLabel("Library (${series.size})") }
-        items(series, key = { it.id }) {
-            SeriesRow(it, config, onClick = { onSeriesClick(it.id) })
-            androidx.compose.foundation.layout.Spacer(Modifier.padding(bottom = 10.dp))
         }
     }
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.6.0 — Search and status filters
+
+- Radarr and Sonarr library lists now have a search field (filters by title as you type)
+  and a row of status filter chips: **All / Downloaded / Monitored / Unmonitored** for
+  Radarr, **All / Complete / Monitored / Unmonitored** for Sonarr
+- The Queue section is hidden while a search or filter is active, showing only Library
+  results that match
+
 ## v0.5.0 — Home tab, floating nav, and a poster-loading fix
 
 - **Poster fix**: posters now load correctly. The previous version tried to fetch them
