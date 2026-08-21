@@ -38,7 +38,8 @@ data class MovieDetail(
     val hasFile: Boolean,
     val sizeOnDisk: Long,
     val path: String,
-    val posterPath: String?,
+    val posterUrl: String?,
+    val posterRemoteUrl: String?,
     val config: ServerConfig,
     val raw: JsonObject,
 )
@@ -53,13 +54,16 @@ private fun JsonObject.toMovieDetail(config: ServerConfig): MovieDetail = MovieD
     hasFile = this["hasFile"]?.jsonPrimitive?.booleanOrNull ?: false,
     sizeOnDisk = this["sizeOnDisk"]?.jsonPrimitive?.longOrNull ?: 0L,
     path = this["path"]?.jsonPrimitive?.contentOrNull ?: "",
-    posterPath = (this["images"] as? JsonArray)
-        ?.mapNotNull { it.jsonObject }
-        ?.firstOrNull { it["coverType"]?.jsonPrimitive?.contentOrNull == "poster" }
-        ?.get("url")?.jsonPrimitive?.contentOrNull,
+    posterUrl = posterImageEntry(this)?.get("url")?.jsonPrimitive?.contentOrNull,
+    posterRemoteUrl = posterImageEntry(this)?.get("remoteUrl")?.jsonPrimitive?.contentOrNull,
     config = config,
     raw = this,
 )
+
+private fun posterImageEntry(obj: JsonObject): JsonObject? =
+    (obj["images"] as? JsonArray)
+        ?.mapNotNull { it.jsonObject }
+        ?.firstOrNull { it["coverType"]?.jsonPrimitive?.contentOrNull == "poster" }
 
 sealed interface DetailAction {
     data object SearchStarted : DetailAction

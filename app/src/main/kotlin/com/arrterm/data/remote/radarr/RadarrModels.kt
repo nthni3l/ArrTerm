@@ -20,9 +20,8 @@ data class RadarrMovie(
     val sizeOnDisk: Long = 0,
     val images: List<RadarrImage> = emptyList(),
 ) {
-    /** Path relative to the server root, e.g. "/MediaCover/123/poster.jpg?lastWrite=..." */
-    val posterPath: String?
-        get() = images.firstOrNull { it.coverType == "poster" }?.url
+    val posterImage: RadarrImage?
+        get() = images.firstOrNull { it.coverType == "poster" }
 }
 
 @Serializable

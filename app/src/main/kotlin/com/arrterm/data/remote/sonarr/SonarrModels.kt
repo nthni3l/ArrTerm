@@ -20,8 +20,8 @@ data class SonarrSeries(
     val statistics: SonarrSeriesStatistics = SonarrSeriesStatistics(),
     val images: List<SonarrImage> = emptyList(),
 ) {
-    val posterPath: String?
-        get() = images.firstOrNull { it.coverType == "poster" }?.url
+    val posterImage: SonarrImage?
+        get() = images.firstOrNull { it.coverType == "poster" }
 }
 
 @Serializable

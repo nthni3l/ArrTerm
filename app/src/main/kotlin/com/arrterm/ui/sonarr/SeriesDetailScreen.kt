@@ -25,6 +25,7 @@ import com.arrterm.ui.common.NotConfiguredPlaceholder
 import com.arrterm.ui.common.PillButton
 import com.arrterm.ui.common.ServerImage
 import com.arrterm.ui.common.StatusBadge
+import com.arrterm.ui.common.posterRef
 import com.arrterm.ui.common.ToastBus
 import com.arrterm.ui.common.UiState
 import com.arrterm.ui.radarr.DetailAction
@@ -85,9 +86,10 @@ private fun SeriesDetailContent(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+        val poster = posterRef(series.posterUrl, series.posterRemoteUrl, series.config)
         ServerImage(
-            url = series.config.resolve(series.posterPath),
-            apiKey = series.config.apiKey,
+            url = poster.url,
+            apiKey = poster.apiKey,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp),

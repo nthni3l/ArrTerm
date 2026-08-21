@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.5.0 — Home tab, floating nav, and a poster-loading fix
+
+- **Poster fix**: posters now load correctly. The previous version tried to fetch them
+  through Radarr/Sonarr's own image proxy using the API key, but that proxy route is
+  gated by a separate cookie-based login system the app never established, so images
+  silently failed. Posters are now pulled from the original TMDB/TVDB/Fanart URL that
+  Radarr/Sonarr already records for each title (publicly reachable, no auth needed),
+  falling back to the server's own copy only when no such URL exists.
+- **Home tab**: new dashboard tab (and bottom-nav entry) summarizing all three services
+  at a glance — library/queue counts for Radarr and Sonarr, pending count for Overseerr —
+  tapping a card jumps straight to that service's tab.
+- **Floating nav bar**: the bottom navigation is now a raised, fully-rounded "island"
+  with margin on all sides instead of a bar flush against the screen edge, so it no
+  longer sits under the phone's gesture/button navigation area.
+
 ## v0.4.0 — Real poster artwork
 
 - Radarr and Sonarr library rows, and both detail screens, now show the actual poster

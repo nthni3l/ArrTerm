@@ -27,6 +27,7 @@ import com.arrterm.data.settings.ServerConfig
 import com.arrterm.ui.common.NotConfiguredPlaceholder
 import com.arrterm.ui.common.SectionLabel
 import com.arrterm.ui.common.ServerImage
+import com.arrterm.ui.common.posterRef
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.TabTopBar
 import com.arrterm.ui.common.UiState
@@ -132,9 +133,10 @@ private fun MovieRow(movie: RadarrMovie, config: ServerConfig, onClick: () -> Un
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            val poster = posterRef(movie.posterImage?.url, movie.posterImage?.remoteUrl, config)
             ServerImage(
-                url = config.resolve(movie.posterPath),
-                apiKey = config.apiKey,
+                url = poster.url,
+                apiKey = poster.apiKey,
                 modifier = Modifier.size(width = 44.dp, height = 64.dp),
             )
             Column(modifier = Modifier.weight(1f)) {

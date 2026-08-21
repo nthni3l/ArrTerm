@@ -1,5 +1,6 @@
 package com.arrterm.ui.nav
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.size
@@ -8,8 +9,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.dp
+
+@Composable
+fun HomeNavIcon(color: Color) {
+    Canvas(modifier = Modifier.size(20.dp)) {
+        val w = size.width
+        val h = size.height
+        val path = Path().apply {
+            moveTo(w * 0.5f, 0f)
+            lineTo(w, h * 0.42f)
+            lineTo(w * 0.82f, h * 0.42f)
+            lineTo(w * 0.82f, h)
+            lineTo(w * 0.18f, h)
+            lineTo(w * 0.18f, h * 0.42f)
+            lineTo(0f, h * 0.42f)
+            close()
+        }
+        drawPath(path, color = color)
+    }
+}
 
 @Composable
 fun RadarrNavIcon(color: Color) {

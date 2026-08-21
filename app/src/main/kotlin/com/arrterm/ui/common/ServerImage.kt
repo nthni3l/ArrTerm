@@ -17,14 +17,15 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 
 /**
- * Shows a poster image served through the configured Radarr/Sonarr instance (authenticated
- * with the same X-Api-Key as the rest of the API), falling back to the striped placeholder
- * when there's no poster URL or the request fails.
+ * Shows a poster image, falling back to the striped placeholder when there's no URL or the
+ * request fails. [apiKey] is only attached as an X-Api-Key header when non-null — pass null
+ * for external CDN URLs (e.g. TMDB/TVDB's own `remoteUrl`) so the server's key isn't sent
+ * to third parties; pass the key only when loading through the Radarr/Sonarr server itself.
  */
 @Composable
 fun ServerImage(
     url: String?,
-    apiKey: String,
+    apiKey: String?,
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(6.dp),
     placeholderLabel: String = "IMG",
@@ -34,11 +35,13 @@ fun ServerImage(
         return
     }
 
-    val request = ImageRequest.Builder(LocalContext.current)
+    val requestBuilder = ImageRequest.Builder(LocalContext.current)
         .data(url)
-        .httpHeaders(NetworkHeaders.Builder().add("X-Api-Key", apiKey).build())
         .crossfade(true)
-        .build()
+    if (!apiKey.isNullOrBlank()) {
+        requestBuilder.httpHeaders(NetworkHeaders.Builder().add("X-Api-Key", apiKey).build())
+    }
+    val request = requestBuilder.build()
 
     SubcomposeAsyncImage(
         model = request,

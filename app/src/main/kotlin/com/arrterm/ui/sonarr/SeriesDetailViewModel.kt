@@ -37,7 +37,8 @@ data class SeriesDetail(
     val episodeFileCount: Int,
     val episodeCount: Int,
     val path: String,
-    val posterPath: String?,
+    val posterUrl: String?,
+    val posterRemoteUrl: String?,
     val config: ServerConfig,
     val raw: JsonObject,
 )
@@ -54,14 +55,17 @@ private fun JsonObject.toSeriesDetail(config: ServerConfig): SeriesDetail {
         episodeFileCount = stats?.get("episodeFileCount")?.jsonPrimitive?.intOrNull ?: 0,
         episodeCount = stats?.get("episodeCount")?.jsonPrimitive?.intOrNull ?: 0,
         path = this["path"]?.jsonPrimitive?.contentOrNull ?: "",
-        posterPath = (this["images"] as? JsonArray)
-            ?.mapNotNull { it.jsonObject }
-            ?.firstOrNull { it["coverType"]?.jsonPrimitive?.contentOrNull == "poster" }
-            ?.get("url")?.jsonPrimitive?.contentOrNull,
+        posterUrl = posterImageEntry(this)?.get("url")?.jsonPrimitive?.contentOrNull,
+        posterRemoteUrl = posterImageEntry(this)?.get("remoteUrl")?.jsonPrimitive?.contentOrNull,
         config = config,
         raw = this,
     )
 }
+
+private fun posterImageEntry(obj: JsonObject): JsonObject? =
+    (obj["images"] as? JsonArray)
+        ?.mapNotNull { it.jsonObject }
+        ?.firstOrNull { it["coverType"]?.jsonPrimitive?.contentOrNull == "poster" }
 
 class SeriesDetailViewModel(
     private val repository: ServerConfigRepository,

@@ -30,6 +30,7 @@ import com.arrterm.data.settings.ServerConfig
 import com.arrterm.ui.common.NotConfiguredPlaceholder
 import com.arrterm.ui.common.SectionLabel
 import com.arrterm.ui.common.ServerImage
+import com.arrterm.ui.common.posterRef
 import com.arrterm.ui.common.StatusBadge
 import com.arrterm.ui.common.TabTopBar
 import com.arrterm.ui.common.UiState
@@ -127,9 +128,10 @@ private fun SeriesRow(series: SonarrSeries, config: ServerConfig, onClick: () ->
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            val poster = posterRef(series.posterImage?.url, series.posterImage?.remoteUrl, config)
             ServerImage(
-                url = config.resolve(series.posterPath),
-                apiKey = config.apiKey,
+                url = poster.url,
+                apiKey = poster.apiKey,
                 modifier = Modifier.size(width = 44.dp, height = 64.dp),
             )
             Column(modifier = Modifier.weight(1f)) {
